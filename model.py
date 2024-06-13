@@ -16,15 +16,34 @@ SHUFFLE_SIZE = 10000
 SEED = 12
 
 def print_gpu_usage():
+    """Prints the current GPU usage."""
     GPUs = GPUtil.getGPUs()
     for gpu in GPUs:
-        print(f"GPU ID: {gpu.id}, Name: {gpu.name}, Load: {gpu.load*100:.2f}%, Free Memory: {gpu.memoryFree}MB, Used Memory: {gpu.memoryUsed}MB, Total Memory: {gpu.memoryTotal}MB, Temperature: {gpu.temperature}°C")
+        print(f"GPU ID: {gpu.id}, Name: {gpu.name}, Load: {gpu.load*100:.2f}%, Free Memory: {gpu.memoryFree}MB, "
+              f"Used Memory: {gpu.memoryUsed}MB, Total Memory: {gpu.memoryTotal}MB, Temperature: {gpu.temperature}°C")
 
 def start_gpu_monitoring():
+    """Starts a daemon thread to monitor GPU usage."""
     monitor_thread = threading.Thread(target=print_gpu_usage, daemon=True)
     monitor_thread.start()
 
-def get_dataset_partitions_tf(ds, train_split=TRAIN_SPLIT, val_split=VAL_SPLIT, test_split=TEST_SPLIT, shuffle=SHUFFLE, shuffle_size=SHUFFLE_SIZE, seed=SEED):
+def get_dataset_partitions_tf(ds, train_split=TRAIN_SPLIT, val_split=VAL_SPLIT, test_split=TEST_SPLIT, 
+                              shuffle=SHUFFLE, shuffle_size=SHUFFLE_SIZE, seed=SEED):
+    """
+    Splits a dataset into train, validation, and test sets.
+    
+    Args:
+    ds (tf.data.Dataset): The dataset to be split.
+    train_split (float): The fraction of the dataset to be used for training.
+    val_split (float): The fraction of the dataset to be used for validation.
+    test_split (float): The fraction of the dataset to be used for testing.
+    shuffle (bool): Whether to shuffle the dataset.
+    shuffle_size (int): Buffer size for shuffling.
+    seed (int): Random seed for reproducibility.
+    
+    Returns:
+    tuple: A tuple containing the train, validation, and test datasets.
+    """
     assert (train_split + val_split + test_split) == 1, "Splits must sum to 1"
 
     ds_size = len(ds)
@@ -41,6 +60,18 @@ def get_dataset_partitions_tf(ds, train_split=TRAIN_SPLIT, val_split=VAL_SPLIT, 
     return train_ds, val_ds, test_ds
 
 def load_and_prepare_data(directory, image_size, batch_size, shuffle):
+    """
+    Loads and prepares the dataset from the given directory.
+    
+    Args:
+    directory (str): Path to the directory containing the dataset.
+    image_size (tuple): Size to resize images to.
+    batch_size (int): Number of images per batch.
+    shuffle (bool): Whether to shuffle the dataset.
+    
+    Returns:
+    tf.data.Dataset: The prepared dataset.
+    """
     dataset = tf.keras.preprocessing.image_dataset_from_directory(
         directory,
         shuffle=shuffle,
@@ -51,7 +82,48 @@ def load_and_prepare_data(directory, image_size, batch_size, shuffle):
     print("Class names:", class_names)
     return dataset
 
+def prepare_datasets_for_training(train_ds, val_ds, test_ds, shuffle_size=SHUFFLE_SIZE):
+    """
+    Caches, shuffles, and prefetches the datasets for efficient training.
+    
+    Args:
+    train_ds (tf.data.Dataset): The training dataset.
+    val_ds (tf.data.Dataset): The validation dataset.
+    test_ds (tf.data.Dataset): The test dataset.
+    shuffle_size (int): Buffer size for shuffling.
+    
+    Returns:
+    tuple: A tuple containing the prepared train, validation, and test datasets.
+    """
+    train_ds = train_ds.cache().shuffle(shuffle_size).prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+    val_ds = val_ds.cache().shuffle(shuffle_size).prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+    test_ds = test_ds.cache().shuffle(shuffle_size).prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+    return train_ds, val_ds, test_ds
+
+def create_data_augmentation_pipeline(image_size):
+    """
+    Creates a data augmentation pipeline.
+    
+    Args:
+    image_size (tuple): Size to resize images to.
+    
+    Returns:
+    tf.keras.Sequential: The data augmentation pipeline.
+    """
+    resize_and_rescale = tf.keras.Sequential([
+        layers.Resizing(image_size[0], image_size[1]),
+        layers.Rescaling(1./255)
+    ])
+
+    data_augmentation = tf.keras.Sequential([
+        layers.RandomFlip("horizontal_and_vertical"),
+        layers.RandomRotation(0.2)
+    ])
+
+    return resize_and_rescale, data_augmentation
+
 def main():
+    print("TensorFlow version:", tf.__version__)
     start_gpu_monitoring()
 
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
@@ -64,6 +136,10 @@ def main():
     print(f"Train dataset size: {len(train_ds)}")
     print(f"Validation dataset size: {len(val_ds)}")
     print(f"Test dataset size: {len(test_ds)}")
+    
+    train_ds, val_ds, test_ds = prepare_datasets_for_training(train_ds, val_ds, test_ds)
+
+    resize_and_rescale, data_augmentation = create_data_augmentation_pipeline(IMAGE_SIZE)
 
 if __name__ == "__main__":
     main()
