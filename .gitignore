@@ -1,0 +1,5 @@
+logdir/
+model/__pycache__/
+__pycache__/
+hyperband/
+config/__pycache__/

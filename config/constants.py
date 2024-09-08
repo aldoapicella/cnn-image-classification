@@ -1,0 +1,13 @@
+# Contains all the constants used in the project
+DIRECTORY = 'training'
+SHUFFLE = True
+IMAGE_SIZE = (256, 256)
+BATCH_SIZE = 32
+TRAIN_SPLIT = 0.8
+VAL_SPLIT = 0.1
+TEST_SPLIT = 0.1
+SHUFFLE_SIZE = 10000
+SEED = 12
+EPOCHS = 10
+MAX_TRIALS = 10
+EXECUTION_PER_TRIAL = 2
