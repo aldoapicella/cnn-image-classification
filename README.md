@@ -1,4 +1,3 @@
-```markdown
 # Image Classification Project with TensorFlow and Keras Tuner
 
 This project demonstrates how to build and tune a Convolutional Neural Network (CNN) for image classification using TensorFlow and Keras Tuner. It features a modular structure for efficient management and scalability.
