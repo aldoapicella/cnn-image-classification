@@ -1,4 +1,3 @@
-```markdown
 # Image Classification Project with TensorFlow and Keras Tuner
 
 This project demonstrates how to build and tune a Convolutional Neural Network (CNN) for image classification using TensorFlow and Keras Tuner. It features a modular structure for efficient management and scalability.
@@ -13,7 +12,6 @@ project/
 │
 ├── model/
 │   ├── data_loader.py
-│   ├── gpu_monitor.py
 │   ├── augmentation.py
 │   ├── model.py
 │   └── tuner.py
@@ -24,7 +22,6 @@ project/
 
 - **config/constants.py**: Contains configurable constants used across the project.
 - **model/data_loader.py**: Handles data loading and preprocessing.
-- **model/gpu_monitor.py**: Monitors GPU usage during training.
 - **model/augmentation.py**: Defines data augmentation pipelines.
 - **model/model.py**: Constructs the CNN model.
 - **model/tuner.py**: Implements hyperparameter tuning using Keras Tuner.
@@ -32,7 +29,6 @@ project/
 
 ## Features
 
-- **GPU Monitoring**: Real-time monitoring of GPU usage to optimize resource utilization.
 - **Data Augmentation**: Increases model robustness by applying random transformations to the training data.
 - **Hyperparameter Tuning**: Utilizes Keras Tuner to find the optimal hyperparameters for the model.
 - **Modular Architecture**: Each component of the project is modularized for better maintainability and scalability.
@@ -43,12 +39,11 @@ project/
 - TensorFlow 2.x
 - Keras Tuner
 - CUDA and cuDNN (for GPU support)
-- GPUtil
 
 Install the required packages using pip:
 
 ```bash
-pip install tensorflow keras-tuner GPUtil
+pip install tensorflow keras-tuner
 ```
 
 ## Setup
@@ -78,7 +73,6 @@ The script will:
 - Split the data into training, validation, and test sets.
 - Perform hyperparameter tuning using Keras Tuner.
 - Train the model with the best-found hyperparameters.
-- Output GPU usage statistics during training.
 
 ## Customization
 
