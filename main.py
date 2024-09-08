@@ -1,11 +1,10 @@
 import tensorflow as tf
-from model import data_loader, gpu_monitor, tuner as tuner_module
+from model import data_loader, tuner as tuner_module
 from config.constants import IMAGE_SIZE, EPOCHS
 
 def main():
     """Main function to run the training and hyperparameter tuning."""
     print("TensorFlow version:", tf.__version__)
-    gpu_monitor.start_gpu_monitoring()
 
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     
