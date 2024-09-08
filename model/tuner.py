@@ -13,29 +13,30 @@ class CNNHyperModel(HyperModel):
         """Builds the hypermodel with hyperparameter tuning."""
         resize_and_rescale, data_augmentation = create_data_augmentation_pipeline()
 
-        model = tf.keras.Sequential([
-            resize_and_rescale,
-            data_augmentation,
-            layers.Conv2D(
-                filters=hp.Int('conv_1_filter', min_value=32, max_value=128, step=16),
-                kernel_size=hp.Choice('conv_1_kernel', values=[3, 5]),
-                activation='relu',
-                input_shape=self.input_shape
-            ),
-            layers.MaxPooling2D(pool_size=(2, 2)),
-            layers.Conv2D(
-                filters=hp.Int('conv_2_filter', min_value=32, max_value=128, step=16),
-                kernel_size=hp.Choice('conv_2_kernel', values=[3, 5]),
-                activation='relu'
-            ),
-            layers.MaxPooling2D(pool_size=(2, 2)),
-            layers.Flatten(),
-            layers.Dense(
-                units=hp.Int('dense_1_units', min_value=32, max_value=128, step=16),
-                activation='relu'
-            ),
-            layers.Dense(self.num_classes, activation='softmax')
-        ])
+        inputs = tf.keras.Input(shape=self.input_shape)  # Definir el input explícitamente
+
+        x = resize_and_rescale(inputs)
+        x = data_augmentation(x)
+        x = layers.Conv2D(
+            filters=hp.Int('conv_1_filter', min_value=32, max_value=128, step=16),
+            kernel_size=hp.Choice('conv_1_kernel', values=[3, 5]),
+            activation='relu'
+        )(x)
+        x = layers.MaxPooling2D(pool_size=(2, 2))(x)
+        x = layers.Conv2D(
+            filters=hp.Int('conv_2_filter', min_value=32, max_value=128, step=16),
+            kernel_size=hp.Choice('conv_2_kernel', values=[3, 5]),
+            activation='relu'
+        )(x)
+        x = layers.MaxPooling2D(pool_size=(2, 2))(x)
+        x = layers.Flatten()(x)
+        x = layers.Dense(
+            units=hp.Int('dense_1_units', min_value=32, max_value=128, step=16),
+            activation='relu'
+        )(x)
+        outputs = layers.Dense(self.num_classes, activation='softmax')(x)
+
+        model = tf.keras.Model(inputs=inputs, outputs=outputs)  # Crear el modelo con inputs explícitos
 
         model.compile(
             optimizer='adam',
@@ -44,6 +45,7 @@ class CNNHyperModel(HyperModel):
         )
 
         return model
+
 
 def get_hypermodel(input_shape, num_classes):
     """Returns the hypermodel."""

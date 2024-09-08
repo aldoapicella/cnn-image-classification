@@ -26,5 +26,4 @@ def build_model(input_shape, num_classes):
         loss=tf.losses.SparseCategoricalCrossentropy(from_logits=False),
         metrics=['accuracy']
     )
-    
     return model

@@ -4,3 +4,4 @@ __pycache__/
 hyperband/
 config/__pycache__/
 training/
+result/
